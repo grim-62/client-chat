@@ -1,0 +1,42 @@
+const ALERT = "ALERT";
+const REFETCH_CHATS = "REFETCH_CHATS";
+const NEW_ATTACHMENTS = "NEW_ATTACHMENTS";
+const NEW_MESSAGE_ALERT = "NEW_MESSAGE_ALERT";
+const NEW_REQUEST = "NEW_REQUEST";
+
+// Socket events
+const SOCKET_EVENTS = {
+  // Connection events
+  CONNECTION: 'connection',
+  DISCONNECT: 'disconnect',
+  
+  // Chat events
+  JOIN_CHAT: 'JOIN_CHAT',
+  LEAVE_CHAT: 'LEAVE_CHAT',
+  NEW_MESSAGE: 'NEW_MESSAGE',
+  MESSAGE_SENT: 'MESSAGE_SENT',
+  MESSAGE_RECEIVED: 'MESSAGE_RECEIVED',
+  
+  // Typing events
+  TYPING_START: 'TYPING_START',
+  TYPING_END: 'TYPING_END',
+  
+  // User status events
+  USER_ONLINE: 'USER_ONLINE',
+  USER_OFFLINE: 'USER_OFFLINE',
+  CURRENT_ONLINE_USERS: 'CURRENT_ONLINE_USERS',
+  
+  // Error events
+  ERROR: 'ERROR',
+} as const;
+
+export {
+  ALERT,
+  REFETCH_CHATS,
+  NEW_ATTACHMENTS,
+  NEW_MESSAGE_ALERT,
+  NEW_REQUEST,
+  SOCKET_EVENTS
+};
+
+
