@@ -1,13 +1,47 @@
-import { CreateGroupChatDto } from "@/types/chat";
-import { api } from "./api";
-import type { User } from "@/types/auth";
-import { get } from "http";
+import {api} from "@/services/api";
+import { Friend, Message } from "@/types/friend";
 
+export const ChatService = {
+  // ✅ Get direct + group chats
+  async getChats(): Promise<Friend[]> {
+    const res = await api.get(`/chat/direct-chats`);
+    return res.data;
+  },
 
+  // ✅ Get chat messages
+  async getMessages(chatId: string): Promise<Message[]> {
+    const res = await api.get(`/chat/${chatId}/messages`);
+    return res.data;
+  },
 
-export const chatService = {
-  createGroupChat: (dto: CreateGroupChatDto) => api.post<any>(`/chat/group`, dto).then((r) => r.data),
-  requestResponse: (requestId: string, accept: boolean) => api.post(`/friends/respond/${requestId}`, { accept }).then((r) => r.data),
-  getNotification: () => api.get("/friends/pending-requests").then((r) => r.data),
-  getFriendsList: () => api.get<any>("/chat/direct-chats").then((r) => r.data),
+  // ✅ Send message (via REST, not socket)
+  async sendMessage(chatId: string, message: string): Promise<Message> {
+    const res = await api.post(`/chat/${chatId}/messages`, { message });
+    return res.data;
+  },
+
+  // ✅ Friend requests
+  async getFriendRequests(): Promise<Friend[]> {
+    const res = await api.get("/friends/requests");
+    return res.data;
+  },
+
+  async acceptFriendRequest(requestId: string) {
+    return api.post(`/friends/requests/${requestId}/accept`);
+  },
+
+  async rejectFriendRequest(requestId: string) {
+    return api.post(`/friends/requests/${requestId}/reject`);
+  },
+
+  // ✅ Groups
+  async getGroups(userId: string) {
+    const res = await api.get(`/groups/${userId}`);
+    return res.data;
+  },
+
+  async createGroup(payload: { name: string; members: string[] }) {
+    const res = await api.post("/groups", payload);
+    return res.data;
+  },
 };

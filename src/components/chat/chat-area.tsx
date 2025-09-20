@@ -20,10 +20,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useChatEvents, useChatActions } from "@/context/socket-provider"
-import { useMessages } from "@/hooks/use-messages"
-import { useChat } from "@/hooks/use-chat"
-import { Message, Attachment } from "@/context/socket-provider"
+// import { useChatEvents, useChatActions } from "@/context/socket-provider"
+// import { useMessages } from "@/hooks/use-messages"
+// import { useChat } from "@/hooks/use-chat"
+// import { Message, Attachment } from "@/context/socket-provider"
 
 interface ChatAreaProps {
   chatId: string
@@ -38,62 +38,62 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const { chat, isLoading: chatLoading } = useChat(chatId)
-  const { messages, isLoading: messagesLoading, addMessage } = useMessages(chatId)
-  const { onNewMessage, onTypingStart, onTypingEnd, onMessageSent } = useChatEvents()
-  const { startTyping, stopTyping, sendMessage: sendMessageSocket } = useChatActions()
+  // const { chat, isLoading: chatLoading } = useChat(chatId)
+  // const { messages, isLoading: messagesLoading, addMessage } = useMessages(chatId)
+  // const { onNewMessage, onTypingStart, onTypingEnd, onMessageSent } = useChatEvents()
+  // const { startTyping, stopTyping, sendMessage: sendMessageSocket } = useChatActions()
 
   // Handle new messages
-  useEffect(() => {
-    const unsubscribeNewMessage = onNewMessage((event) => {
-      if (event.chatId === chatId) {
-        // Append incoming message and scroll
-        addMessage(event.message as unknown as Message)
-        scrollToBottom()
-      }
-    })
+  // useEffect(() => {
+  //   const unsubscribeNewMessage = onNewMessage((event) => {
+  //     if (event.chatId === chatId) {
+  //       // Append incoming message and scroll
+  //       addMessage(event.message as unknown as Message)
+  //       scrollToBottom()
+  //     }
+  //   })
 
-    return unsubscribeNewMessage
-  }, [onNewMessage, chatId, addMessage])
+  //   return unsubscribeNewMessage
+  // }, [onNewMessage, chatId, addMessage])
 
   // Handle typing indicators
-  useEffect(() => {
-    const unsubscribeTypingStart = onTypingStart((event) => {
-      if (event.chatId === chatId && event.user !== currentUserId) {
-        setTypingUsers(prev => new Set(prev).add(event.user))
-      }
-    })
+  // useEffect(() => {
+  //   const unsubscribeTypingStart = onTypingStart((event) => {
+  //     if (event.chatId === chatId && event.user !== currentUserId) {
+  //       setTypingUsers(prev => new Set(prev).add(event.user))
+  //     }
+  //   })
 
-    const unsubscribeTypingEnd = onTypingEnd((event) => {
-      if (event.chatId === chatId && event.user !== currentUserId) {
-        setTypingUsers(prev => {
-          const newSet = new Set(prev)
-          newSet.delete(event.user)
-          return newSet
-        })
-      }
-    })
+  //   const unsubscribeTypingEnd = onTypingEnd((event) => {
+  //     if (event.chatId === chatId && event.user !== currentUserId) {
+  //       setTypingUsers(prev => {
+  //         const newSet = new Set(prev)
+  //         newSet.delete(event.user)
+  //         return newSet
+  //       })
+  //     }
+  //   })
 
-    return () => {
-      unsubscribeTypingStart()
-      unsubscribeTypingEnd()
-    }
-  }, [onTypingStart, onTypingEnd, chatId, currentUserId])
+  //   return () => {
+  //     unsubscribeTypingStart()
+  //     unsubscribeTypingEnd()
+  //   }
+  // }, [onTypingStart, onTypingEnd, chatId, currentUserId])
 
   // Handle message sent confirmation
-  useEffect(() => {
-    const unsubscribeMessageSent = onMessageSent((response) => {
-      if (response.ok) {
-        setMessage("")
-        scrollToBottom()
-      } else {
-        console.error("Failed to send message:", response.error)
-        // You could show a toast notification here
-      }
-    })
+  // useEffect(() => {
+  //   const unsubscribeMessageSent = onMessageSent((response) => {
+  //     if (response.ok) {
+  //       setMessage("")
+  //       scrollToBottom()
+  //     } else {
+  //       console.error("Failed to send message:", response.error)
+  //       // You could show a toast notification here
+  //     }
+  //   })
 
-    return unsubscribeMessageSent
-  }, [onMessageSent])
+  //   return unsubscribeMessageSent
+  // }, [onMessageSent])
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -104,11 +104,11 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
   }
 
   // Scroll to bottom when messages list updates
-  useEffect(() => {
-    if (!messagesLoading) {
-      scrollToBottom()
-    }
-  }, [messagesLoading, messages])
+  // useEffect(() => {
+  //   if (!messagesLoading) {
+  //     scrollToBottom()
+  //   }
+  // }, [messagesLoading, messages])
 
   const handleSendMessage = async () => {
     const payload = {
@@ -118,22 +118,22 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
     }
 
     // Emit over socket so all clients receive message_new
-    sendMessageSocket(payload)
+    // sendMessageSocket(payload)
   }
 
-  const handleTyping = (isTyping: boolean) => {
-    if (isTyping && !typingUsers.has(currentUserId)) {
-      startTyping({
-        chatId,
-        members: chat?.members.map(m => m._id) || []
-      })
-    } else if (!isTyping && typingUsers.has(currentUserId)) {
-      stopTyping({
-        chatId,
-        members: chat?.members.map(m => m._id) || []
-      })
-    }
-  }
+  // const handleTyping = (isTyping: boolean) => {
+  //   if (isTyping && !typingUsers.has(currentUserId)) {
+  //     startTyping({
+  //       chatId,
+  //       members: chat?.members.map(m => m._id) || []
+  //     })
+  //   } else if (!isTyping && typingUsers.has(currentUserId)) {
+  //     stopTyping({
+  //       chatId,
+  //       members: chat?.members.map(m => m._id) || []
+  //     })
+  //   }
+  // }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -149,29 +149,29 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
     }
   }, [chatId])
 
-  if (chatLoading || messagesLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-          <p className="text-muted-foreground">Loading chat...</p>
-        </div>
-      </div>
-    )
-  }
+  // if (chatLoading || messagesLoading) {
+  //   return (
+  //     <div className="flex-1 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+  //         <p className="text-muted-foreground">Loading chat...</p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
-  if (!chat) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Chat not found</h2>
-          <p className="text-muted-foreground">The chat you're looking for doesn't exist.</p>
-        </div>
-      </div>
-    )
-  }
+  // if (!chat) {
+  //   return (
+  //     <div className="flex-1 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <h2 className="text-xl font-semibold mb-2">Chat not found</h2>
+  //         <p className="text-muted-foreground">The chat you're looking for doesn't exist.</p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
-  const otherMember = chat.groupChat ? null : (chat.members.find(m => m._id !== currentUserId) || chat.members[0])
+  // const otherMember = chat.groupChat ? null : (chat.members.find(m => m._id !== currentUserId) || chat.members[0])
 
   return (
     <div className="flex flex-col h-full">
@@ -179,20 +179,20 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={chat.groupChat ? chat.avatar : otherMember?.avatar} />
+            {/* <AvatarImage src={chat.groupChat ? chat.avatar : otherMember?.avatar} /> */}
             <AvatarFallback>
-              {chat.groupChat ? chat.name?.charAt(0) : otherMember?.username?.charAt(0) || otherMember?.email?.charAt(0)}
+              {/* {chat.groupChat ? chat.name?.charAt(0) : otherMember?.username?.charAt(0) || otherMember?.email?.charAt(0)} */}
             </AvatarFallback>
           </Avatar>
           <div>
             <h3 className="font-semibold">
-              {chat.groupChat ? chat.name : (otherMember?.username || otherMember?.email)}
+              {/* {chat.groupChat ? chat.name : (otherMember?.username || otherMember?.email)} */}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {chat.groupChat 
+              {/* {chat.groupChat 
                 ? `${chat.members.length} members`
                 : otherMember?.isOnline ? "Online" : "Offline"
-              }
+              } */}
             </p>
           </div>
         </div>
@@ -212,14 +212,14 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem>View Profile</DropdownMenuItem>
-              {chat.groupChat && (
+              {/* {chat.groupChat && (
                 <>
                   <DropdownMenuItem>Add Members</DropdownMenuItem>
                   <DropdownMenuItem>Group Settings</DropdownMenuItem>
                 </>
-              )}
+              )} */}
               <DropdownMenuItem className="text-destructive">
-                {chat.groupChat ? "Leave Group" : "Block User"}
+                {/* {chat.groupChat ? "Leave Group" : "Block User"} */}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -229,7 +229,7 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
       {/* Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 p-4">
         <div className="space-y-4">
-          {messages.map((msg) => (
+          {/* {messages.map((msg) => (
             <div
               key={msg._id}
               className={`flex gap-3 ${
@@ -283,7 +283,7 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
                 </div>
               </div>
             </div>
-          ))}
+          ))} */}
           
           {/* Typing indicator */}
           {typingUsers.size > 0 && (
@@ -318,8 +318,8 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            onFocus={() => handleTyping(true)}
-            onBlur={() => handleTyping(false)}
+            // onFocus={() => handleTyping(true)}
+            // onBlur={() => handleTyping(false)}
             className="flex-1"
             ref={inputRef}
           />

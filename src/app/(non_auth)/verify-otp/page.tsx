@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
-// import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch } from "@/store/hooks";
+import { verifyOtp } from "@/store/actions/user.action";
 // import { verifyOtp } from "@/store/actions/user.action";
 
 export default function VerifyOtpPage() {
@@ -15,7 +16,7 @@ export default function VerifyOtpPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // const usedispatch = useAppDispatch()
+  const dispatch = useAppDispatch()
   const router = useRouter();
 
 
@@ -25,6 +26,8 @@ export default function VerifyOtpPage() {
     setLoading(true);
     try {
       // await usedispatch(verifyOtp({ email:identifier, code }))
+      await dispatch(verifyOtp({email: identifier, code}))
+      // await AuthService.verifyOtp()
       router.push("/");
     } catch (err: any) {
       setError(err.response?.data?.message || "OTP invalid");

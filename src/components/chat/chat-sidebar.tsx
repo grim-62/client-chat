@@ -28,6 +28,8 @@ import { CreateGroupDialog } from "./create-group-dialog"
 import { AddFriendDialog } from "./add-friend-dialog"
 import FooterSidebar from "./sidebar-footer"
 import { api } from "@/services/api"
+import { useAppDispatch } from "@/store/hooks"
+import { fetchFriends } from "@/store/slice/chatSlice"
 
 interface ChatSidebarProps {
   selectedChat: string | null
@@ -46,6 +48,14 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
   const { chats, isLoading: chatsLoading } = useChats()
   const { friends, isLoading: friendsLoading } = useFriends()
   const { requests, isLoading: requestsLoading, respondToRequest } = useFriendRequests()
+  const dispatch= useAppDispatch()
+  const fetchFriend= async()=>{
+    const responce = await dispatch(fetchFriends())
+    console.log("chat side bar friend responce ----->",responce)
+  }  
+  useEffect(()=>{
+    fetchFriend() 
+  },[])
 
   const filteredChats = chats.filter(chat =>
     chat.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -162,21 +172,21 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
               ) : (
                 filteredFriends.map((friend) => (
                   <div
-                    key={friend.id}
-                    onClick={() => openDirectChat(friend.id )}
+                    key={friend._id}
+                    onClick={() => openDirectChat(friend._id)}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer"
                   >
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={friend?.avatar} />
+                      <AvatarImage src={friend?.profileImage} />
                       <AvatarFallback>{friend.email.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">{friend.username || friend.email}</div>
                       <div className="text-sm text-muted-foreground truncate">
-                        {friend.isOnline ? "Online" : "Offline"}
+                        {friend.online ? "Online" : "Offline"}
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDirectChat(friend.id)}}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDirectChat(friend._id)}}>
                       Message
                     </Button>
                   </div>
@@ -194,18 +204,18 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
               ) : (
                 filteredFriends.map((friend) => (
                   <div
-                    key={friend.id}
-                    onClick={() => openDirectChat(friend.id)}
+                    key={friend._id}
+                    onClick={() => openDirectChat(friend._id)}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer"
                   >
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={friend?.avatar} />
+                      <AvatarImage src={friend?.profileImage  } />
                       <AvatarFallback>{friend.email.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <div className="font-medium">{friend.username || friend.email}</div>
                       <div className="text-sm text-muted-foreground">
-                        {friend.isOnline ? "Online" : "Offline"}
+                        {friend.online ? "Online" : "Offline"}
                       </div>
                     </div>
                     <DropdownMenu>
@@ -215,7 +225,7 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => openDirectChat(friend.id)}>
+                        <DropdownMenuItem onClick={() => openDirectChat(friend._id)}>
                           Send Message
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">

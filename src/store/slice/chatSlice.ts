@@ -1,66 +1,72 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Friend, ChatMessage } from "@/types/friend";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { Friend, Message } from "@/types/friend";
+import { ChatService } from "@/services/chat.service";
 
 interface ChatState {
   friends: Friend[];
-  messages: ChatMessage[];
+  messages: Message[];
   typingUsers: string[];
-  connected: boolean;
+  activeChatId: string | null;
+  loading: boolean;
 }
 
 const initialState: ChatState = {
   friends: [],
   messages: [],
   typingUsers: [],
-  connected: false,
+  activeChatId: null,
+  loading: false,
 };
+
+// ✅ Async actions
+export const fetchFriends = createAsyncThunk(
+  "chat/fetchFriends",
+  async () => {
+    const response = await ChatService.getChats();
+    console.log("Fetched friends:------>", response);
+    return response
+  }
+);
+
+export const fetchMessages = createAsyncThunk(
+  "chat/fetchMessages",
+  async (chatId: string) => {
+    return await ChatService.getMessages(chatId);
+  }
+);
 
 const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-    setFriends: (state, action: PayloadAction<Friend[]>) => {
-      state.friends = action.payload;
+    setActiveChat: (s, a: PayloadAction<string>) => {
+      s.activeChatId = a.payload;
     },
-    addMessage: (state, action: PayloadAction<ChatMessage>) => {
-      state.messages.push(action.payload);
+    addMessage: (s, a: PayloadAction<Message>) => {
+      s.messages.push(a.payload);
     },
-    userOnline: (state, action: PayloadAction<string>) => {
-      state.friends = state.friends.map((f) =>
-        f._id === action.payload ? { ...f, online: true } : f
-      );
+    setTyping: (s, a: PayloadAction<string>) => {
+      if (!s.typingUsers.includes(a.payload)) s.typingUsers.push(a.payload);
     },
-    userOffline: (state, action: PayloadAction<string>) => {
-      state.friends = state.friends.map((f) =>
-        f._id === action.payload ? { ...f, online: false } : f
-      );
+    clearTyping: (s, a: PayloadAction<string>) => {
+      s.typingUsers = s.typingUsers.filter((id) => id !== a.payload);
     },
-    typingStart: (state, action: PayloadAction<string>) => {
-      if (!state.typingUsers.includes(action.payload)) {
-        state.typingUsers.push(action.payload);
-      }
-    },
-    typingStop: (state, action: PayloadAction<string>) => {
-      state.typingUsers = state.typingUsers.filter(
-        (id) => id !== action.payload
-      );
-    },
-    setConnected: (state, action: PayloadAction<boolean>) => {
-      state.connected = action.payload;
-    },
-    resetChat: () => initialState,
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchFriends.pending, (s) => {
+        s.loading = true;
+      })
+      .addCase(fetchFriends.fulfilled, (s, a) => {
+        s.loading = false;
+        s.friends = a.payload;
+      })
+      .addCase(fetchMessages.fulfilled, (s, a) => {
+        s.messages = a.payload;
+      });
   },
 });
 
-export const {
-  setFriends,
-  addMessage,
-  userOnline,
-  userOffline,
-  typingStart,
-  typingStop,
-  setConnected,
-  resetChat,
-} = chatSlice.actions;
-
+export const { setActiveChat, addMessage, setTyping, clearTyping } =
+  chatSlice.actions;
 export default chatSlice.reducer;

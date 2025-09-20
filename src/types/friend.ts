@@ -12,9 +12,11 @@ export interface Friend {
   online: boolean;
 }
 
-export interface ChatMessage {
+export interface Message {
+  _id?: string;
+  chatId: string;
   senderId: string;
-  recipientId: string;
   message: string;
   createdAt?: string;
 }
+

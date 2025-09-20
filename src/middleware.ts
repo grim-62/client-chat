@@ -1,7 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { api } from "./services/api";
 
 interface JWTPayload {
   exp?: number; // expiration in seconds

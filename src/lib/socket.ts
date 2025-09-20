@@ -1,51 +1,50 @@
-import { io, Socket } from "socket.io-client";
-import { store } from "@/store/store";
-import {
-  addMessage,
-  userOnline,
-  userOffline,
-  typingStart,
-  typingStop,
-  setConnected,
-} from "@/store/slice/chatSlice";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import {api} from "@/services/api";
 
-let socket: Socket | null = null;
+export interface Friend {
+  _id: string;
+  username: string;
+  profileImage?: string;
+  online: boolean;
+}
 
-export const initSocket = (userId: string) => {
-  if (socket) return socket;
+interface ChatState {
+  friends: Friend[];
+}
 
-  socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001", {
-    query: { userId },
-    transports: ["websocket"],
-  });
-
-  // Connection events
-  socket.on("connect", () => store.dispatch(setConnected(true)));
-  socket.on("disconnect", () => store.dispatch(setConnected(false)));
-
-  // Chat events
-  socket.on("receiveMessage", (msg) => store.dispatch(addMessage(msg)));
-  socket.on("userOnline", ({ userId }) =>
-    store.dispatch(userOnline(userId))
-  );
-  socket.on("userOffline", ({ userId }) =>
-    store.dispatch(userOffline(userId))
-  );
-  socket.on("typingStart", ({ senderId }) =>
-    store.dispatch(typingStart(senderId))
-  );
-  socket.on("typingStop", ({ senderId }) =>
-    store.dispatch(typingStop(senderId))
-  );
-
-  return socket;
+const initialState: ChatState = {
+  friends: [],
 };
 
-export const getSocket = () => socket;
-
-export const disconnectSocket = () => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
+// Fetch friends once at load
+export const fetchFriends = createAsyncThunk(
+  "chat/fetchFriends",
+  async (userId: string) => {
+    const { data } = await api.get(`/chat/${userId}`);
+    return data as Friend[];
   }
-};
+);
+
+const chatSlice = createSlice({
+  name: "chat",
+  initialState,
+  reducers: {
+    updateFriendStatus(
+      state,
+      action: PayloadAction<{ userId: string; online: boolean }>
+    ) {
+      const friend = state.friends.find((f) => f._id === action.payload.userId);
+      if (friend) {
+        friend.online = action.payload.online;
+      }
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchFriends.fulfilled, (state, action) => {
+      state.friends = action.payload;
+    });
+  },
+});
+
+export const { updateFriendStatus } = chatSlice.actions;
+export default chatSlice.reducer;
