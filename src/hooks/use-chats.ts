@@ -37,7 +37,6 @@ export function useChats() {
       try {
         setIsLoading(true)
         const response = await api.get("/chat/group-chats")
-        console.log("fetching group chat from api ",response.data)
         setChats(response.data || [])
       } catch (error) {
         console.error("Failed to fetch chats:", error)

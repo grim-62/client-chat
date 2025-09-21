@@ -20,12 +20,13 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/services/auth.service";
 import { toast } from "sonner";
-import { selectUserRefreshtoken } from "@/store/slice/user.slice";
+import { selectUser, selectUserRefreshtoken } from "@/store/slice/user.slice";
 import { ThemeToggleButton } from "../theme/theme-toggle-button";
 
 const FooterSidebar = () => {
   const dispatch = useAppDispatch();
   const token = useAppSelector(selectUserRefreshtoken)
+  const user = useAppSelector(selectUser)
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -55,7 +56,7 @@ const FooterSidebar = () => {
       <DropdownMenuTrigger asChild>
         <SidebarMenuItem className="flex mb-3 mx-4 gap-2 items-center">
           <User />
-          {"data?.email"}
+          {user.username}
           <ChevronUp className="ml-auto" />
         </SidebarMenuItem>
       </DropdownMenuTrigger>

@@ -1,50 +1,20 @@
-import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
-import {api} from "@/services/api";
+import { io, Socket } from "socket.io-client";
 
-export interface Friend {
-  _id: string;
-  username: string;
-  profileImage?: string;
-  online: boolean;
-}
+let socket: Socket | null = null;
 
-interface ChatState {
-  friends: Friend[];
-}
-
-const initialState: ChatState = {
-  friends: [],
+export const initSocket = (userId: string) => {
+  if (!socket) {
+    socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080", {
+      query: { userId }, // passes userId to NestJS handshake
+      transports: ["websocket"],
+    });
+  }
+  return socket;
 };
 
-// Fetch friends once at load
-export const fetchFriends = createAsyncThunk(
-  "chat/fetchFriends",
-  async (userId: string) => {
-    const { data } = await api.get(`/chat/${userId}`);
-    return data as Friend[];
+export const getSocket = () => {
+  if (!socket) {
+    throw new Error("Socket not initialized. Call initSocket(userId) first.");
   }
-);
-
-const chatSlice = createSlice({
-  name: "chat",
-  initialState,
-  reducers: {
-    updateFriendStatus(
-      state,
-      action: PayloadAction<{ userId: string; online: boolean }>
-    ) {
-      const friend = state.friends.find((f) => f._id === action.payload.userId);
-      if (friend) {
-        friend.online = action.payload.online;
-      }
-    },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(fetchFriends.fulfilled, (state, action) => {
-      state.friends = action.payload;
-    });
-  },
-});
-
-export const { updateFriendStatus } = chatSlice.actions;
-export default chatSlice.reducer;
+  return socket;
+};

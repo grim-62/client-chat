@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAppSelector } from "@/store/hooks"
 import { selectChatfriend } from "@/store/slice/chatSlice"
+import { useChat } from "@/hooks/use-chat-socket"
+import { selectUser } from "@/store/slice/user.slice"
 // import { useChatEvents, useChatActions } from "@/context/socket-provider"
 // import { useMessages } from "@/hooks/use-messages"
 // import { useChat } from "@/hooks/use-chat"
@@ -30,14 +32,23 @@ import { selectChatfriend } from "@/store/slice/chatSlice"
 
 export function ChatArea() {
   const selectedFriend = useAppSelector(selectChatfriend)
-  console.log("selectedFriend ========>",selectedFriend)
   const [message, setMessage] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  const currentUser = useAppSelector(selectUser)
+  const recipientUser = useAppSelector(selectChatfriend)
+
+  const { messages, sendMessage, isTyping, startTyping, stopTyping }= useChat(currentUser._id,recipientUser._id)
+
+    const handleSend = () => {
+    if (!message.trim()) return;
+    sendMessage(message);
+    setMessage("")
+    stopTyping();
+  };
   // const { chat, isLoading: chatLoading } = useChat(chatId)
   // const { messages, isLoading: messagesLoading, addMessage } = useMessages(chatId)
   // const { onNewMessage, onTypingStart, onTypingEnd, onMessageSent } = useChatEvents()
@@ -110,16 +121,16 @@ export function ChatArea() {
   //   }
   // }, [messagesLoading, messages])
 
-  const handleSendMessage = async () => {
-    const payload = {
-      id: selectedFriend._id,
-      content: message.trim(),
-      attachments: []
-    }
+  // const handleSendMessage = async () => {
+  //   const payload = {
+  //     id: selectedFriend._id,
+  //     content: message.trim(),
+  //     attachments: []
+  //   }
 
     // Emit over socket so all clients receive message_new
     // sendMessageSocket(payload)
-  }
+  // }
 
   // const handleTyping = (isTyping: boolean) => {
   //   if (isTyping && !typingUsers.has(currentUserId)) {
@@ -138,7 +149,8 @@ export function ChatArea() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      handleSendMessage()
+      // handleSendMessage()
+      handleSend()
     }
   }
 
@@ -186,7 +198,6 @@ export function ChatArea() {
           </Avatar>
           <div>
             <h3 className="font-semibold">
-              {console.log(selectedFriend?.isGroup )}
               {selectedFriend?.isGroup ? selectedFriend?.chatName : (selectedFriend?.username || selectedFriend?.email)}
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -227,17 +238,23 @@ export function ChatArea() {
         </div>
       </div>
 
-      {/* Messages */}
+       {/* Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 p-4">
+       {/* {messages.map((m, i) => (
+          <p key={i}>
+            <strong>{m.senderId === selectedFriend._id ?  "Them" : "Me" }:</strong> {m.message}
+          </p>
+        ))} */}
+
         <div className="space-y-4">
-          {/* {messages.map((msg) => (
+          {messages.map((msg,i) => (
             <div
-              key={msg._id}
+              key={i}
               className={`flex gap-3 ${
-                msg.sender._id === currentUserId ? "justify-end" : "justify-start"
+                msg.senderId === selectedFriend._id ? "justify-start":  "justify-end" 
               }`}
             >
-              {msg.sender._id !== currentUserId && (
+              {/* {msg.senderId === selectedFriend._id && (
                 (() => {
                   const senderUser = chat.members.find(m => m._id === msg.sender._id)
                   return (
@@ -247,18 +264,18 @@ export function ChatArea() {
                     </Avatar>
                   )
                 })()
-              )}
+              )} */}
               
               <div
                 className={`max-w-[70%] ${
-                  msg.sender._id === currentUserId
+                  msg.senderId === selectedFriend._id
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted"
                 } rounded-lg p-3`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.content || ""}</p>
+                <p className="text-sm whitespace-pre-wrap">{msg.message || ""}</p>
                 
-                {msg.attachments && msg.attachments.length > 0 && (
+                {/* {msg.attachments && msg.attachments.length > 0 && (
                   <div className="mt-2 space-y-2">
                     {msg.attachments.map((attachment, index) => (
                       <div key={index} className="flex items-center gap-2">
@@ -274,20 +291,20 @@ export function ChatArea() {
                       </div>
                     ))}
                   </div>
-                )}
+                )} */}
                 
                 <div className="text-xs opacity-70 mt-1">
-                  {new Date(msg.createdAt).toLocaleTimeString([], {
+                  {/* {new Date(msg.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit"
-                  })}
+                  })} */}
                 </div>
               </div>
             </div>
-          ))} */}
+          ))}
           
-          {/* Typing indicator */}
-          {typingUsers.size > 0 && (
+          {/* // Typing indicator  */}
+          {isTyping && (
             <div className="flex gap-3">
               <Avatar className="h-8 w-8">
                 <AvatarFallback>?</AvatarFallback>
@@ -302,7 +319,7 @@ export function ChatArea() {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </ScrollArea> 
 
       {/* Message Input */}
       <div className="p-4 border-t">
@@ -325,7 +342,7 @@ export function ChatArea() {
             ref={inputRef}
           />
           
-          <Button onClick={handleSendMessage}>
+          <Button onClick={handleSend}>
             <Send className="h-4 w-4" />
           </Button>
         </div>

@@ -41,7 +41,7 @@ interface ChatSidebarProps {
 type TabType = "chats" | "friends" | "requests";
 
 export function ChatSidebar({ onSelectChat, currentUserId }: ChatSidebarProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("chats");
+  const [activeTab, setActiveTab] = useState<TabType>("friends");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);

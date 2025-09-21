@@ -1,42 +1,13 @@
-const ALERT = "ALERT";
-const REFETCH_CHATS = "REFETCH_CHATS";
-const NEW_ATTACHMENTS = "NEW_ATTACHMENTS";
-const NEW_MESSAGE_ALERT = "NEW_MESSAGE_ALERT";
-const NEW_REQUEST = "NEW_REQUEST";
-
-// Socket events
-const SOCKET_EVENTS = {
-  // Connection events
-  CONNECTION: 'connection',
-  DISCONNECT: 'disconnect',
-  
-  // Chat events
-  JOIN_CHAT: 'JOIN_CHAT',
-  LEAVE_CHAT: 'LEAVE_CHAT',
-  NEW_MESSAGE: 'NEW_MESSAGE',
-  MESSAGE_SENT: 'MESSAGE_SENT',
-  MESSAGE_RECEIVED: 'MESSAGE_RECEIVED',
-  
-  // Typing events
-  TYPING_START: 'TYPING_START',
-  TYPING_END: 'TYPING_END',
-  
-  // User status events
-  USER_ONLINE: 'USER_ONLINE',
-  USER_OFFLINE: 'USER_OFFLINE',
-  CURRENT_ONLINE_USERS: 'CURRENT_ONLINE_USERS',
-  
-  // Error events
-  ERROR: 'ERROR',
-} as const;
-
-export {
-  ALERT,
-  REFETCH_CHATS,
-  NEW_ATTACHMENTS,
-  NEW_MESSAGE_ALERT,
-  NEW_REQUEST,
-  SOCKET_EVENTS
-};
-
-
+export const SOCKET_EVENT_CONNECT = 'connect';
+export const SOCKET_EVENT_DISCONNECT = 'disconnect';
+export const SOCKET_EVENT_MESSAGE = 'message';
+export const SOCKET_EVENT_JOIN = 'join';
+export const SOCKET_EVENT_LEAVE = 'leave';
+export const SOCKET_EVENT_TYPING = 'typing';
+export const SOCKET_EVENT_STOP_TYPING = 'stop_typing';
+export const SOCKET_EVENT_ERROR = 'error';
+export const SOCKET_EVENT_ALERT = 'alert';
+export const SOCKET_EVENT_REFETCH_CHATS = 'refetch_chats';
+export const SOCKET_EVENT_NEW_ATTACHMENTS = 'new_attachments';
+export const SOCKET_EVENT_NEW_MESSAGE_ALERT = 'new_message_alert';
+export const SOCKET_EVENT_NEW_REQUEST = 'new_request';

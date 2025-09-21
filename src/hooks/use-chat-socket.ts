@@ -1,78 +1,70 @@
-// // src/hooks/useChatSocket.ts
-// "use client";
-// import { useEffect, useState } from "react";
-// import { getSocket, disconnectSocket } from "@/lib/socket";
-// import { Friend, ChatMessage } from "@/types/friend";
+import { useEffect, useState } from "react";
+import { initSocket, getSocket } from "@/lib/socket";
 
-// export const useChatSocket = (userId: string) => {
-//   const [friends, setFriends] = useState<Friend[]>([]);
-//   const [messages, setMessages] = useState<ChatMessage[]>([]);
-//   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+import {
+  SOCKET_EVENT_MESSAGE,
+  SOCKET_EVENT_TYPING,
+  SOCKET_EVENT_STOP_TYPING,
+  SOCKET_EVENT_ALERT,
+} from "@/constants/constants"; // create same constants file for frontend
 
-//   useEffect(() => {
-//     if (!userId) return;
+interface MessageInterface {
+  senderId:string;
+  recepent:string;
+  message:string;
+}
 
-//     const socket = getSocket(userId);
+export const useChat = (userId: string, recipientId: string) => {
+  const [messages, setMessages] = useState<{ senderId: string; message: string }[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
 
-//     // 👥 Friend online/offline status
-//     socket.on("userOnline", ({ userId }) => {
-//       setFriends((prev) =>
-//         prev.map((f) => (f._id === userId ? { ...f, online: true } : f))
-//       );
-//     });
+  useEffect(() => {
+    const socket = initSocket(userId);
 
-//     socket.on("userOffline", ({ userId }) => {
-//       setFriends((prev) =>
-//         prev.map((f) => (f._id === userId ? { ...f, online: false } : f))
-//       );
-//     });
+    // message received
+    socket.on(SOCKET_EVENT_MESSAGE, (data) => {
+      setMessages((prev) => [...prev, data]);
+    });
 
-//     // 💬 Incoming messages
-//     socket.on("receiveMessage", (msg: ChatMessage) => {
-//       setMessages((prev) => [...prev, msg]);
-//     });
+    // new message alert
+    socket.on(SOCKET_EVENT_ALERT, (data) => {
+      console.log("New message alert", data);
+      // setMessages((prev) => [...prev, data]);
+    });
 
-//     // ✍️ Typing events
-//     socket.on("typingStart", ({ senderId }) => {
-//       setTypingUsers((prev) => [...new Set([...prev, senderId])]);
-//     });
+    // typing events
+    socket.on(SOCKET_EVENT_TYPING, ({ senderId }) => {
+      if (senderId === recipientId) setIsTyping(true);
+    });
 
-//     socket.on("typingStop", ({ senderId }) => {
-//       setTypingUsers((prev) => prev.filter((id) => id !== senderId));
-//     });
+    socket.on(SOCKET_EVENT_STOP_TYPING, ({ senderId }) => {
+      if (senderId === recipientId) setIsTyping(false);
+    });
 
-//     return () => {
-//       socket.off("userOnline");
-//       socket.off("userOffline");
-//       socket.off("receiveMessage");
-//       socket.off("typingStart");
-//       socket.off("typingStop");
-//       disconnectSocket();
-//     };
-//   }, [userId]);
+    return () => {
+      socket.off(SOCKET_EVENT_MESSAGE);
+      socket.off(SOCKET_EVENT_ALERT);
+      socket.off(SOCKET_EVENT_TYPING);
+      socket.off(SOCKET_EVENT_STOP_TYPING);
+    };
+  }, [userId, recipientId]);
 
-//   const sendMessage = (recipientId: string, message: string) => {
-//     const socket = getSocket(userId);
-//     const msg: ChatMessage = { senderId: userId, recipientId, message };
-//     socket.emit("sendMessage", msg);
-//     setMessages((prev) => [...prev, msg]); // optimistic update
-//   };
+  const sendMessage = (message: string) => {
+    const socket = getSocket();
+    socket.emit(SOCKET_EVENT_MESSAGE, { senderId: userId, recipientId, message });
+    console.log("message send to " , userId, recipientId, message)
+  };
 
-//   const startTyping = (recipientId: string) => {
-//     getSocket(userId).emit("typingStart", { senderId: userId, recipientId });
-//   };
+  const startTyping = () => {
+    const socket = getSocket();
+    socket.emit(SOCKET_EVENT_TYPING, { senderId: userId, recipientId });
+  };
 
-//   const stopTyping = (recipientId: string) => {
-//     getSocket(userId).emit("typingStop", { senderId: userId, recipientId });
-//   };
+  const stopTyping = () => {
+    const socket = getSocket();
+    socket.emit(SOCKET_EVENT_STOP_TYPING, { senderId: userId, recipientId });
+  };
 
-//   return {
-//     friends,
-//     setFriends, // so you can load initial list from API
-//     messages,
-//     typingUsers,
-//     sendMessage,
-//     startTyping,
-//     stopTyping,
-//   };
-// };
+
+  return { messages, sendMessage, isTyping, startTyping, stopTyping };
+};
