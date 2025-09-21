@@ -20,17 +20,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAppSelector } from "@/store/hooks"
+import { selectChatfriend } from "@/store/slice/chatSlice"
 // import { useChatEvents, useChatActions } from "@/context/socket-provider"
 // import { useMessages } from "@/hooks/use-messages"
 // import { useChat } from "@/hooks/use-chat"
 // import { Message, Attachment } from "@/context/socket-provider"
 
-interface ChatAreaProps {
-  chatId: string
-  currentUserId: string
-}
 
-export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
+export function ChatArea() {
+  const selectedFriend = useAppSelector(selectChatfriend)
+  console.log("selectedFriend ========>",selectedFriend)
   const [message, setMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
@@ -112,7 +112,7 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
 
   const handleSendMessage = async () => {
     const payload = {
-      chatId,
+      id: selectedFriend._id,
       content: message.trim(),
       attachments: []
     }
@@ -147,7 +147,7 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
     if (inputRef.current) {
       inputRef.current.focus()
     }
-  }, [chatId])
+  }, [selectedFriend])
 
   // if (chatLoading || messagesLoading) {
   //   return (
@@ -179,19 +179,20 @@ export function ChatArea({ chatId, currentUserId }: ChatAreaProps) {
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            {/* <AvatarImage src={chat.groupChat ? chat.avatar : otherMember?.avatar} /> */}
+            <AvatarImage src={selectedFriend?.isGroup ? selectedFriend.avatar : selectedFriend?.profileImage} />
             <AvatarFallback>
-              {/* {chat.groupChat ? chat.name?.charAt(0) : otherMember?.username?.charAt(0) || otherMember?.email?.charAt(0)} */}
+              {selectedFriend?.isGroup ? selectedFriend.username?.charAt(0) : selectedFriend?.username?.charAt(0) || selectedFriend?.email?.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div>
             <h3 className="font-semibold">
-              {/* {chat.groupChat ? chat.name : (otherMember?.username || otherMember?.email)} */}
+              {console.log(selectedFriend?.isGroup )}
+              {selectedFriend?.isGroup ? selectedFriend?.chatName : (selectedFriend?.username || selectedFriend?.email)}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {/* {chat.groupChat 
-                ? `${chat.members.length} members`
-                : otherMember?.isOnline ? "Online" : "Offline"
+              {/* {data?.groupChat 
+                ? `${data?.members.length} members`
+                : data?.member?.isOnline ? "Online" : "Offline"
               } */}
             </p>
           </div>

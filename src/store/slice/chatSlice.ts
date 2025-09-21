@@ -23,7 +23,6 @@ export const fetchFriends = createAsyncThunk(
   "chat/fetchFriends",
   async () => {
     const response = await ChatService.getChats();
-    console.log("Fetched friends:------>", response);
     return response
   }
 );
@@ -39,7 +38,7 @@ const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-    setActiveChat: (s, a: PayloadAction<string>) => {
+    setActiveChat: (s, a: PayloadAction<any>) => {
       s.activeChatId = a.payload;
     },
     addMessage: (s, a: PayloadAction<Message>) => {
@@ -67,6 +66,8 @@ const chatSlice = createSlice({
   },
 });
 
+
+export const selectChatfriend = (state : any) =>state.chat.activeChatId;
 export const { setActiveChat, addMessage, setTyping, clearTyping } =
   chatSlice.actions;
 export default chatSlice.reducer;

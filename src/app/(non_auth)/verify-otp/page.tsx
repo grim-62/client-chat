@@ -25,9 +25,7 @@ export default function VerifyOtpPage() {
     setError("");
     setLoading(true);
     try {
-      // await usedispatch(verifyOtp({ email:identifier, code }))
       await dispatch(verifyOtp({email: identifier, code}))
-      // await AuthService.verifyOtp()
       router.push("/");
     } catch (err: any) {
       setError(err.response?.data?.message || "OTP invalid");

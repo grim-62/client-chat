@@ -52,7 +52,7 @@ export function CreateGroupDialog({ open, onOpenChange, currentUserId }: CreateG
     try {
       await createGroup({
         name: groupName.trim(),
-        members: selectedMembers
+        users: selectedMembers
       })
       
       // Reset form
@@ -107,7 +107,7 @@ export function CreateGroupDialog({ open, onOpenChange, currentUserId }: CreateG
           {selectedMembers.length > 0 && (
             <div className="space-y-2">
               <Label>Selected Members ({selectedMembers.length})</Label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 ">
                 {selectedMembers.map(memberId => {
                   const friend = friends.find(f => f._id === memberId)
                   if (!friend) return null
@@ -115,7 +115,7 @@ export function CreateGroupDialog({ open, onOpenChange, currentUserId }: CreateG
                   return (
                     <Badge key={memberId} variant="secondary" className="flex items-center gap-1">
                       <Avatar className="h-4 w-4">
-                        <AvatarImage src={friend.avatar} />
+                        <AvatarImage src={friend.profileImage} />
                         <AvatarFallback>{friend.username.charAt(0)}</AvatarFallback>
                       </Avatar>
                       {friend.username}
@@ -159,13 +159,13 @@ export function CreateGroupDialog({ open, onOpenChange, currentUserId }: CreateG
                       onClick={() => handleToggleMember(friend._id)}
                     >
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={friend.avatar} />
+                        <AvatarImage src={friend.profileImage} />
                         <AvatarFallback>{friend.username.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="font-medium">{friend.username}</div>
                         <div className="text-sm text-muted-foreground">
-                          {friend.isOnline ? "Online" : "Offline"}
+                          {friend.online ? "Online" : "Offline"}
                         </div>
                       </div>
                       {selectedMembers.includes(friend._id) && (

@@ -5,16 +5,21 @@ import { ChatSidebar } from "@/components/chat/chat-sidebar"
 import { ChatArea } from "@/components/chat/chat-area"
 import { ChatHeader } from "@/components/chat/chat-header"
 // import { useSocket } from "@/context/socket-provider"
-// import { useAuth } from "@/hooks/use-auth"
 import FooterSidebar from "@/components/chat/sidebar-footer"
 import { useAppSelector } from "@/store/hooks"
+import { selectUser } from "@/store/slice/user.slice"
+import { selectChatfriend } from "@/store/slice/chatSlice"
+
 // import { selectUser } from "@/store/slices/authSlice"
-// import { current } from "@reduxjs/toolkit"
 
 export default function Home() {
-  const [selectedChat, setSelectedChat] = useState<string | null>(null)
+  const currentUserDetail = useAppSelector(selectUser)
+  const currentChatFriend = useAppSelector(selectChatfriend)
+
+  const [selectedChat, setSelectedChat] = useState<any | null>(currentChatFriend)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   // const socket = useSocket()
+
   // const user = useAppSelector(selectUser)
 
 
@@ -24,16 +29,16 @@ export default function Home() {
   //   }
   // }, [socket.connected])
 
-  // if (!user) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <div className="text-center">
-  //         <h2 className="text-2xl font-semibold mb-2">Please log in</h2>
-  //         <p className="text-muted-foreground">You need to be authenticated to access the chat.</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  if (!currentUserDetail) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-2">Please log in</h2>
+          <p className="text-muted-foreground">You need to be authenticated to access the chat.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -42,7 +47,7 @@ export default function Home() {
         <ChatSidebar
           selectedChat={selectedChat}
           onSelectChat={setSelectedChat}
-          currentUserId={"user.id"}
+          currentUserId={currentUserDetail._id}
         />
       </div>
 
@@ -50,7 +55,7 @@ export default function Home() {
       <div className="flex-1 flex flex-col">
         
         {selectedChat ? (
-          <ChatArea chatId={selectedChat} currentUserId={"user.id"} />
+          <ChatArea />
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">

@@ -3,7 +3,7 @@ import { api } from "@/services/api"
 
 interface CreateGroupPayload {
   name: string
-  members: string[]
+  users: string[]
 }
 
 export function useCreateGroup() {
@@ -12,7 +12,7 @@ export function useCreateGroup() {
   const createGroup = async (payload: CreateGroupPayload) => {
     try {
       setIsLoading(true)
-      const response = await api.post("/chats/group", payload)
+      const response = await api.post("/chat/group", payload)
       
       if (response.data.success) {
         return { success: true, chat: response.data.chat }

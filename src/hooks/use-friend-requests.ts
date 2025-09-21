@@ -27,7 +27,7 @@ export function useFriendRequests() {
     const fetchRequests = async () => {
       try {
         setIsLoading(true)
-        const response = await api.get("/friends/pending")
+        const response = await api.get("/friends/pending-requests")
         setRequests(response.data || [])
       } catch (error) {
         console.error("Failed to fetch friend requests:", error)
@@ -53,19 +53,9 @@ export function useFriendRequests() {
     }
   }
 
-  const addRequest = (request: FriendRequest) => {
-    setRequests(prev => [request, ...prev])
-  }
-
-  const removeRequest = (requestId: string) => {
-    setRequests(prev => prev.filter(request => request._id !== requestId))
-  }
-
   return { 
     requests, 
     isLoading, 
     respondToRequest, 
-    addRequest, 
-    removeRequest 
   }
 }

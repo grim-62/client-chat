@@ -15,7 +15,7 @@ export function useSendFriendRequest() {
         return { success: true }
       }
     } catch (error: any) {
-      console.error("Failed to send friend request:", error)
+      console.error("Failed to send friend request:",error.response.data.message)
       toast.error(error.response.data.message )
       return { 
         success: false, 

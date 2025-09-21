@@ -36,7 +36,6 @@ export const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(verifyOtp.fulfilled, (state, action) => {
-      console.log("redux slice from see action",action.payload.user)
       state.isAuthenticated = true;
       state.currentUser = {
         _id: action.payload.user._id,
@@ -60,7 +59,8 @@ export const userSlice = createSlice({
 
 export const { logout } = userSlice.actions;
 
-export const selectUser = (state: { user: UserState }) => state.user.currentUser;
+export const selectUser = (state : any) =>state.users.currentUser;
+export const selectUserRefreshtoken = (state : any) =>state.users.refreshToken;
 export const selectIsAuthenticated = (state: { user: UserState }) =>
   state.user.isAuthenticated;
 export const selectTokens = (state: { user: UserState }) => ({

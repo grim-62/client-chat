@@ -1,66 +1,74 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { 
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { useSearchUsers } from "@/hooks/use-search-users"
-import { useSendFriendRequest } from "@/hooks/use-send-friend-request"
-import { Search, UserPlus, Check, X } from "lucide-react"
+} from "@/components/ui/dialog";
+import { useSearchUsers } from "@/hooks/use-search-users";
+import { Search, UserPlus, Check, X } from "lucide-react";
+
+import { toast } from "sonner";
+import { useSendFriendRequest } from "@/hooks/use-send-friend-request";
 
 interface AddFriendDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  currentUserId: string
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  currentUserId: string;
 }
 
-export function AddFriendDialog({ open, onOpenChange, currentUserId }: AddFriendDialogProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  
-  const { searchUsers } = useSearchUsers()
-  const { sendFriendRequest, isLoading: isSending } = useSendFriendRequest()
+export function AddFriendDialog({
+  open,
+  onOpenChange,
+  currentUserId,
+}: AddFriendDialogProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return
-    
-    setIsSearching(true)
-    try {
-      const results = await searchUsers(searchQuery.trim())
-      setSearchResults(results)
-    } catch (error) {
-      console.error("Failed to search users:", error)
-      setSearchResults([])
-    } finally {
-      setIsSearching(false)
+  const { searchUsers } = useSearchUsers();
+  const { sendFriendRequest, isLoading: isSending } = useSendFriendRequest();
+
+  useEffect(() => {
+
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
     }
-  }
+
+    const delayDebounce = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await searchUsers(searchQuery.trim());
+        setSearchResults(results);
+      } catch (error) {
+        // console.error("Failed to search users:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 1000); 
+
+    return () => clearTimeout(delayDebounce); 
+  }, [searchQuery]);
 
   const handleSendRequest = async (userId: string) => {
     try {
-      await sendFriendRequest(userId)
+      const res  = await sendFriendRequest(userId)
       // Remove the user from search results after sending request
       // setSearchResults(prev => prev.filter(user => user._id !== userId))
     } catch (error) {
       console.error("Failed to send friend request:", error)
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch()
     }
   }
 
@@ -73,7 +81,7 @@ export function AddFriendDialog({ open, onOpenChange, currentUserId }: AddFriend
             Search for users and send them friend requests to start chatting.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {/* Search */}
           <div className="space-y-2">
@@ -86,13 +94,9 @@ export function AddFriendDialog({ open, onOpenChange, currentUserId }: AddFriend
                   placeholder="Enter username or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
                   className="pl-10"
                 />
               </div>
-              <Button onClick={handleSearch} disabled={!searchQuery.trim() || isSearching}>
-                {isSearching ? "Searching..." : "Search"}
-              </Button>
             </div>
           </div>
 
@@ -105,20 +109,22 @@ export function AddFriendDialog({ open, onOpenChange, currentUserId }: AddFriend
                   {searchResults.map((user) => (
                     <div
                       key={user._id}
-                      className="flex items-center gap-3 p-3 rounded-lg border"
+                      className="flex items-center gap-3 p-3 rounded-lg border transition-all ease-in-out duration-500"
                     >
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={user.avatar} />
-                        <AvatarFallback>{user.username?.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>
+                          {user.username?.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
-                      
+
                       <div className="flex-1">
                         <div className="font-medium">{user.username}</div>
                         <div className="text-sm text-muted-foreground">
                           {user.email}
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         {user.isFriend ? (
                           <Badge variant="secondary">
@@ -155,7 +161,9 @@ export function AddFriendDialog({ open, onOpenChange, currentUserId }: AddFriend
             <div className="text-center text-muted-foreground py-8">
               <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>No users found matching "{searchQuery}"</p>
-              <p className="text-sm">Try searching with a different username or email</p>
+              <p className="text-sm">
+                Try searching with a different username or email
+              </p>
             </div>
           )}
 
@@ -164,7 +172,9 @@ export function AddFriendDialog({ open, onOpenChange, currentUserId }: AddFriend
             <div className="text-center text-muted-foreground py-8">
               <UserPlus className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>Search for users to add as friends</p>
-              <p className="text-sm">You can search by username or email address</p>
+              <p className="text-sm">
+                You can search by username or email address
+              </p>
             </div>
           )}
         </div>
@@ -176,5 +186,5 @@ export function AddFriendDialog({ open, onOpenChange, currentUserId }: AddFriend
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

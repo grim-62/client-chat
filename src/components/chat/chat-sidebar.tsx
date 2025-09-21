@@ -1,95 +1,101 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   MessageCircle,
   Users,
   UserPlus,
   Search,
   Plus,
-  MoreVertical
-} from "lucide-react"
+  MoreVertical,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useChats } from "@/hooks/use-chats"
-import { useFriends } from "@/hooks/use-friends"
-import { useFriendRequests } from "@/hooks/use-friend-requests"
-import { CreateGroupDialog } from "./create-group-dialog"
-import { AddFriendDialog } from "./add-friend-dialog"
-import FooterSidebar from "./sidebar-footer"
-import { api } from "@/services/api"
-import { useAppDispatch } from "@/store/hooks"
-import { fetchFriends } from "@/store/slice/chatSlice"
+} from "@/components/ui/dropdown-menu";
+import { useChats } from "@/hooks/use-chats";
+import { useFriends } from "@/hooks/use-friends";
+import { useFriendRequests } from "@/hooks/use-friend-requests";
+import { CreateGroupDialog } from "./create-group-dialog";
+import { AddFriendDialog } from "./add-friend-dialog";
+import FooterSidebar from "./sidebar-footer";
+import { api } from "@/services/api";
+import { fetchFriends, setActiveChat } from "@/store/slice/chatSlice";
+import { useAppDispatch } from "@/store/hooks";
+import { ThemeToggleButton } from "../theme/theme-toggle-button";
 
 interface ChatSidebarProps {
-  selectedChat: string | null
-  onSelectChat: (chatId: string) => void
-  currentUserId: string
+  selectedChat: string | null;
+  onSelectChat: (chatId: string) => void;
+  currentUserId: string;
 }
 
-type TabType = "chats" | "friends" | "requests"
+type TabType = "chats" | "friends" | "requests";
 
-export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatSidebarProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("chats")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false)
-  const [isAddFriendOpen, setIsAddFriendOpen] = useState(false)
+export function ChatSidebar({ onSelectChat, currentUserId }: ChatSidebarProps) {
+  const [activeTab, setActiveTab] = useState<TabType>("chats");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
 
-  const { chats, isLoading: chatsLoading } = useChats()
-  const { friends, isLoading: friendsLoading } = useFriends()
-  const { requests, isLoading: requestsLoading, respondToRequest } = useFriendRequests()
-  const dispatch= useAppDispatch()
-  const fetchFriend= async()=>{
-    const responce = await dispatch(fetchFriends())
-    console.log("chat side bar friend responce ----->",responce)
-  }  
-  useEffect(()=>{
-    fetchFriend() 
-  },[])
+  const { chats, isLoading: chatsLoading } = useChats();
+  const { friends, isLoading: friendsLoading } = useFriends();
+  const {
+    requests,
+    isLoading: requestsLoading,
+    respondToRequest,
+  } = useFriendRequests();
+  const dispatch = useAppDispatch();
 
-  const filteredChats = chats.filter(chat =>
-    chat.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    chat.members.some(member =>
-      member.username?.toLowerCase()?.includes(searchQuery?.toLowerCase())
-    )
-  )
+  const fetchFriend = async () => {
+    const responce = await dispatch(fetchFriends());
+  };
 
-  const filteredFriends = friends.filter(friend =>
+  useEffect(() => {
+    fetchFriend();
+  }, []);
+
+  const filteredChats = chats.filter((chat) =>
+    chat.chatName?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredFriends = friends.filter((friend) =>
     friend?.email?.toLowerCase()?.includes(searchQuery?.toLowerCase())
-  )
-  console.log(friends)
+  );
 
   const handleAcceptRequest = async (requestId: string) => {
-    await respondToRequest(requestId, true)
-  }
+    await respondToRequest(requestId, true);
+  };
 
   const handleRejectRequest = async (requestId: string) => {
-    await respondToRequest(requestId, false)
-  }
+    await respondToRequest(requestId, false);
+  };
+
+  const handleSelectFriend = async (data: any) => {
+    await dispatch(setActiveChat(data));
+  };
 
   const openDirectChat = async (otherUserId: string) => {
-    if (!otherUserId) return
+    if (!otherUserId) return;
     try {
-      const { data } = await api.post(`/chats/direct/${otherUserId}`)
-      const chatId = data?.chat?._id
+      const { data } = await api.post(`/chats/direct/${otherUserId}`);
+      const chatId = data?.chat?._id;
       if (chatId) {
-        onSelectChat(chatId)
-        setActiveTab("chats")
+        onSelectChat(chatId);
+        setActiveTab("chats");
       }
     } catch (err) {
-      console.error("Failed to open direct chat", err)
+      console.error("Failed to open direct chat", err);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col h-full bg-card border-r">
@@ -97,7 +103,8 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Messages</h2>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <ThemeToggleButton className=" scale-75" />
             <Button
               variant="outline"
               size="sm"
@@ -130,20 +137,20 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
       {/* Tabs */}
       <div className="flex border-b">
         <Button
-          variant={activeTab === "chats" ? "default" : "ghost"}
-          className="flex-1 rounded-none"
-          onClick={() => setActiveTab("chats")}
-        >
-          <MessageCircle className="h-4 w-4 mr-2" />
-          Chats
-        </Button>
-        <Button
           variant={activeTab === "friends" ? "default" : "ghost"}
           className="flex-1 rounded-none"
           onClick={() => setActiveTab("friends")}
         >
           <Users className="h-4 w-4 mr-2" />
           Friends
+        </Button>
+        <Button
+          variant={activeTab === "chats" ? "default" : "ghost"}
+          className="flex-1 rounded-none"
+          onClick={() => setActiveTab("chats")}
+        >
+          <MessageCircle className="h-4 w-4 mr-2" />
+          Chats
         </Button>
         <Button
           variant={activeTab === "requests" ? "default" : "ghost"}
@@ -163,62 +170,36 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
       {/* Content */}
       <ScrollArea className="flex-1">
         <div className="p-4">
-          {activeTab === "chats" && (
+          {activeTab === "friends" && (
             <div className="space-y-2">
               {friendsLoading ? (
-                <div className="text-center text-muted-foreground">Loading friends...</div>
+                <div className="text-center text-muted-foreground">
+                  Loading friends...
+                </div>
               ) : filteredFriends.length === 0 ? (
-                <div className="text-center text-muted-foreground">No friends found</div>
+                <div className="text-center text-muted-foreground">
+                  No friends found
+                </div>
               ) : (
                 filteredFriends.map((friend) => (
                   <div
                     key={friend._id}
-                    onClick={() => openDirectChat(friend._id)}
+                    onClick={() => handleSelectFriend(friend)}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer"
                   >
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={friend?.profileImage} />
                       <AvatarFallback>{friend.email.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{friend.username || friend.email}</div>
-                      <div className="text-sm text-muted-foreground truncate">
-                        {friend.online ? "Online" : "Offline"}
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDirectChat(friend._id)}}>
-                      Message
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          {activeTab === "friends" && (
-            <div className="space-y-2">
-              {friendsLoading ? (
-                <div className="text-center text-muted-foreground">Loading friends...</div>
-              ) : filteredFriends.length === 0 ? (
-                <div className="text-center text-muted-foreground">No friends found</div>
-              ) : (
-                filteredFriends.map((friend) => (
-                  <div
-                    key={friend._id}
-                    onClick={() => openDirectChat(friend._id)}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer"
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={friend?.profileImage  } />
-                      <AvatarFallback>{friend.email.charAt(0)}</AvatarFallback>
-                    </Avatar>
                     <div className="flex-1">
-                      <div className="font-medium">{friend.username || friend.email}</div>
+                      <div className="font-medium">
+                        {friend.username || friend.email}
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         {friend.online ? "Online" : "Offline"}
                       </div>
                     </div>
-                    <DropdownMenu>
+                    {/* <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation() }}>
                           <MoreVertical className="h-4 w-4" />
@@ -232,7 +213,45 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
                           Remove Friend
                         </DropdownMenuItem>
                       </DropdownMenuContent>
-                    </DropdownMenu>
+                    </DropdownMenu> */}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {activeTab === "chats" && (
+            <div className="space-y-2">
+              {chatsLoading ? (
+                <div className="text-center text-muted-foreground">
+                  Loading friends...
+                </div>
+              ) : filteredChats.length === 0 ? (
+                <div className="text-center text-muted-foreground">
+                  No friends found
+                </div>
+              ) : (
+                filteredChats.map((chat) => (
+                  <div
+                    key={chat._id}
+                    onClick={() => handleSelectFriend(chat)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={chat?.avatar} />
+                      <AvatarFallback>{chat.chatName.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">
+                        {chat.chatName}
+                      </div>
+                      {/* <div className="text-sm text-muted-foreground truncate">
+                        {chat.online ? "Online" : "Offline"}
+                      </div> */}
+                    </div>
+                    {/* <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDirectChat(friend._id)}}>
+                      Message
+                    </Button> */}
                   </div>
                 ))
               )}
@@ -242,9 +261,13 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
           {activeTab === "requests" && (
             <div className="space-y-2">
               {requestsLoading ? (
-                <div className="text-center text-muted-foreground">Loading requests...</div>
+                <div className="text-center text-muted-foreground">
+                  Loading requests...
+                </div>
               ) : requests.length === 0 ? (
-                <div className="text-center text-muted-foreground">No pending requests</div>
+                <div className="text-center text-muted-foreground">
+                  No pending requests
+                </div>
               ) : (
                 requests.map((request) => (
                   <div
@@ -253,25 +276,31 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
                   >
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={request.sender.avatar} />
-                      <AvatarFallback>{request.sender.username?.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>
+                        {request.sender.username?.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <div className="font-medium">{request.sender.username}</div>
-                      <div className="text-sm text-muted-foreground">Wants to be your friend</div>
+                      <div className="font-medium">
+                        {request.sender.username}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Wants to be your friend
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
                         onClick={() => handleAcceptRequest(request._id)}
                       >
-                        Accept
+                        ❤️
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleRejectRequest(request._id)}
                       >
-                        Decline
+                        ☠️
                       </Button>
                     </div>
                   </div>
@@ -283,7 +312,6 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
       </ScrollArea>
 
       <FooterSidebar />
-
 
       {/* Dialogs */}
       <CreateGroupDialog
@@ -298,5 +326,5 @@ export function ChatSidebar({ selectedChat, onSelectChat, currentUserId }: ChatS
         currentUserId={currentUserId}
       />
     </div>
-  )
+  );
 }
