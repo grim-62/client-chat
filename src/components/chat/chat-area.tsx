@@ -39,9 +39,10 @@ export function ChatArea() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const currentUser = useAppSelector(selectUser)
-  const recipientUser = useAppSelector(selectChatfriend)
+  const ChatDetail = useAppSelector(selectChatfriend)
+  const user = { _id: currentUser._id, username: currentUser.username }
 
-  const { messages, sendMessage, isTyping, startTyping, stopTyping }= useChat(currentUser._id,recipientUser._id)
+  const { messages, sendMessage, isTyping, startTyping, stopTyping }= useChat(user,ChatDetail._id, ChatDetail.members,)
 
     const handleSend = () => {
     if (!message.trim()) return;
@@ -251,7 +252,7 @@ export function ChatArea() {
             <div
               key={i}
               className={`flex gap-3 ${
-                msg.senderId === selectedFriend._id ? "justify-start":  "justify-end" 
+                msg.sender._id === currentUser._id ? "justify-end":  "justify-start" 
               }`}
             >
               {/* {msg.senderId === selectedFriend._id && (
@@ -268,12 +269,12 @@ export function ChatArea() {
               
               <div
                 className={`max-w-[70%] ${
-                  msg.senderId === selectedFriend._id
+                  msg.sender._id === selectedFriend._id
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted"
                 } rounded-lg p-3`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.message || ""}</p>
+                <p className="text-sm whitespace-pre-wrap">{msg.content || ""}</p>
                 
                 {/* {msg.attachments && msg.attachments.length > 0 && (
                   <div className="mt-2 space-y-2">

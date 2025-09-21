@@ -17,7 +17,7 @@ interface Message {
   createdAt: string;
 }
 
-export const useChat = (user: { _id: string; name: string }, chatId: string, members: string[]) => {
+export const useChat = (user: { _id: string; username: string }, chatId: string, members: string[]) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState<string | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
@@ -75,7 +75,7 @@ export const useChat = (user: { _id: string; name: string }, chatId: string, mem
       chatId,
       message: content,
       members,
-      sender: { _id: user._id, name: user.name },
+      sender: { _id: user._id, name: user.username },
     });
 
     // Optimistic UI update
@@ -84,7 +84,7 @@ export const useChat = (user: { _id: string; name: string }, chatId: string, mem
       {
         _id: uuid(),
         content,
-        sender: { _id: user._id, name: user.name },
+        sender: { _id: user._id, name: user.username },
         chat: chatId,
         createdAt: new Date().toISOString(),
       },
