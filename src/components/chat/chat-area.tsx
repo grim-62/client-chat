@@ -1,119 +1,80 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
-import { 
-  Send, 
-  Paperclip, 
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import {
+  Send,
+  Paperclip,
   Smile,
   MoreVertical,
   Phone,
-  Video
-} from "lucide-react"
-import { 
+  Video,
+} from "lucide-react";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useAppSelector } from "@/store/hooks"
-import { selectChatfriend } from "@/store/slice/chatSlice"
-import { useChat } from "@/hooks/use-chat-socket"
-import { selectUser } from "@/store/slice/user.slice"
+} from "@/components/ui/dropdown-menu";
+import { useAppSelector } from "@/store/hooks";
+import { selectChatfriend } from "@/store/slice/chatSlice";
+import { useChat } from "@/hooks/use-chat-socket";
+import { selectUser } from "@/store/slice/user.slice";
 // import { useChatEvents, useChatActions } from "@/context/socket-provider"
 // import { useMessages } from "@/hooks/use-messages"
 // import { useChat } from "@/hooks/use-chat"
 // import { Message, Attachment } from "@/context/socket-provider"
 
-
 export function ChatArea() {
-  const selectedFriend = useAppSelector(selectChatfriend)
-  const [message, setMessage] = useState("")
-  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const selectedFriend = useAppSelector(selectChatfriend);
+  const [message, setMessage] = useState("");
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const currentUser = useAppSelector(selectUser)
-  const ChatDetail = useAppSelector(selectChatfriend)
-  const user = { _id: currentUser._id, username: currentUser.username }
+  const currentUser = useAppSelector(selectUser);
+  const ChatDetail = useAppSelector(selectChatfriend);
+  const user = { _id: currentUser._id, username: currentUser.username };
 
-  const { messages, sendMessage, isTyping, startTyping, stopTyping }= useChat(user,ChatDetail._id, ChatDetail.members,)
-
-    const handleSend = () => {
+  const { messages, sendMessage, isTyping, startTyping, stopTyping } = useChat(
+    user,
+    ChatDetail._id,
+    ChatDetail.members
+  );
+  const handleSend = () => {
     if (!message.trim()) return;
     sendMessage(message);
-    setMessage("")
+    setMessage("");
     stopTyping();
   };
-  // const { chat, isLoading: chatLoading } = useChat(chatId)
-  // const { messages, isLoading: messagesLoading, addMessage } = useMessages(chatId)
-  // const { onNewMessage, onTypingStart, onTypingEnd, onMessageSent } = useChatEvents()
-  // const { startTyping, stopTyping, sendMessage: sendMessageSocket } = useChatActions()
-
-  // Handle new messages
-  // useEffect(() => {
-  //   const unsubscribeNewMessage = onNewMessage((event) => {
-  //     if (event.chatId === chatId) {
-  //       // Append incoming message and scroll
-  //       addMessage(event.message as unknown as Message)
-  //       scrollToBottom()
-  //     }
-  //   })
-
-  //   return unsubscribeNewMessage
-  // }, [onNewMessage, chatId, addMessage])
-
-  // Handle typing indicators
-  // useEffect(() => {
-  //   const unsubscribeTypingStart = onTypingStart((event) => {
-  //     if (event.chatId === chatId && event.user !== currentUserId) {
-  //       setTypingUsers(prev => new Set(prev).add(event.user))
-  //     }
-  //   })
-
-  //   const unsubscribeTypingEnd = onTypingEnd((event) => {
-  //     if (event.chatId === chatId && event.user !== currentUserId) {
-  //       setTypingUsers(prev => {
-  //         const newSet = new Set(prev)
-  //         newSet.delete(event.user)
-  //         return newSet
-  //       })
-  //     }
-  //   })
-
-  //   return () => {
-  //     unsubscribeTypingStart()
-  //     unsubscribeTypingEnd()
-  //   }
-  // }, [onTypingStart, onTypingEnd, chatId, currentUserId])
-
-  // Handle message sent confirmation
-  // useEffect(() => {
-  //   const unsubscribeMessageSent = onMessageSent((response) => {
-  //     if (response.ok) {
-  //       setMessage("")
-  //       scrollToBottom()
-  //     } else {
-  //       console.error("Failed to send message:", response.error)
-  //       // You could show a toast notification here
-  //     }
-  //   })
-
-  //   return unsubscribeMessageSent
-  // }, [onMessageSent])
+  
+  const handleTyping = (value: string) => {
+    setMessage(value);
+    
+    console.log("sdfsdfsf",isTyping)
+    if (value.length > 0) {
+      startTyping();
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        stopTyping();
+      }, 2000); // stop after 2s of no input
+    } else {
+      stopTyping();
+    }
+  };
 
   const scrollToBottom = () => {
     setTimeout(() => {
       if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
-    }, 100)
-  }
+    }, 100);
+  };
 
   // Scroll to bottom when messages list updates
   // useEffect(() => {
@@ -122,45 +83,20 @@ export function ChatArea() {
   //   }
   // }, [messagesLoading, messages])
 
-  // const handleSendMessage = async () => {
-  //   const payload = {
-  //     id: selectedFriend._id,
-  //     content: message.trim(),
-  //     attachments: []
-  //   }
-
-    // Emit over socket so all clients receive message_new
-    // sendMessageSocket(payload)
-  // }
-
-  // const handleTyping = (isTyping: boolean) => {
-  //   if (isTyping && !typingUsers.has(currentUserId)) {
-  //     startTyping({
-  //       chatId,
-  //       members: chat?.members.map(m => m._id) || []
-  //     })
-  //   } else if (!isTyping && typingUsers.has(currentUserId)) {
-  //     stopTyping({
-  //       chatId,
-  //       members: chat?.members.map(m => m._id) || []
-  //     })
-  //   }
-  // }
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
+      e.preventDefault();
       // handleSendMessage()
-      handleSend()
+      handleSend();
     }
-  }
+  };
 
   // Autofocus input when chat loads/changes
   useEffect(() => {
     if (inputRef.current) {
-      inputRef.current.focus()
+      inputRef.current.focus();
     }
-  }, [selectedFriend])
+  }, [selectedFriend]);
 
   // if (chatLoading || messagesLoading) {
   //   return (
@@ -173,18 +109,18 @@ export function ChatArea() {
   //   )
   // }
 
-  // if (!chat) {
-  //   return (
-  //     <div className="flex-1 flex items-center justify-center">
-  //       <div className="text-center">
-  //         <h2 className="text-xl font-semibold mb-2">Chat not found</h2>
-  //         <p className="text-muted-foreground">The chat you're looking for doesn't exist.</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
-
-  // const otherMember = chat.groupChat ? null : (chat.members.find(m => m._id !== currentUserId) || chat.members[0])
+  if (!ChatDetail) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Chat not found</h2>
+          <p className="text-muted-foreground">
+            The chat you're looking for doesn't exist.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -192,14 +128,25 @@ export function ChatArea() {
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={selectedFriend?.isGroup ? selectedFriend.avatar : selectedFriend?.profileImage} />
+            <AvatarImage
+              src={
+                selectedFriend?.isGroup
+                  ? selectedFriend.avatar
+                  : selectedFriend?.profileImage
+              }
+            />
             <AvatarFallback>
-              {selectedFriend?.isGroup ? selectedFriend.username?.charAt(0) : selectedFriend?.username?.charAt(0) || selectedFriend?.email?.charAt(0)}
+              {selectedFriend?.isGroup
+                ? selectedFriend.username?.charAt(0)
+                : selectedFriend?.username?.charAt(0) ||
+                  selectedFriend?.email?.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div>
             <h3 className="font-semibold">
-              {selectedFriend?.isGroup ? selectedFriend?.chatName : (selectedFriend?.username || selectedFriend?.email)}
+              {selectedFriend?.isGroup
+                ? selectedFriend?.chatName
+                : selectedFriend?.username || selectedFriend?.email}
             </h3>
             <p className="text-sm text-muted-foreground">
               {/* {data?.groupChat 
@@ -209,7 +156,7 @@ export function ChatArea() {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm">
             <Phone className="h-4 w-4" />
@@ -239,20 +186,16 @@ export function ChatArea() {
         </div>
       </div>
 
-       {/* Messages */}
+      {/* Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 p-4">
-       {/* {messages.map((m, i) => (
-          <p key={i}>
-            <strong>{m.senderId === selectedFriend._id ?  "Them" : "Me" }:</strong> {m.message}
-          </p>
-        ))} */}
-
         <div className="space-y-4">
-          {messages.map((msg,i) => (
+          {messages.map((msg, i) => (
             <div
               key={i}
               className={`flex gap-3 ${
-                msg.sender._id === currentUser._id ? "justify-end":  "justify-start" 
+                msg.sender._id === currentUser._id
+                  ? "justify-end"
+                  : "justify-start"
               }`}
             >
               {/* {msg.senderId === selectedFriend._id && (
@@ -266,7 +209,7 @@ export function ChatArea() {
                   )
                 })()
               )} */}
-              
+
               <div
                 className={`max-w-[70%] ${
                   msg.sender._id === selectedFriend._id
@@ -274,8 +217,10 @@ export function ChatArea() {
                     : "bg-muted"
                 } rounded-lg p-3`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.content || ""}</p>
-                
+                <p className="text-sm whitespace-pre-wrap">
+                  {msg.content || ""}
+                </p>
+
                 {/* {msg.attachments && msg.attachments.length > 0 && (
                   <div className="mt-2 space-y-2">
                     {msg.attachments.map((attachment, index) => (
@@ -293,34 +238,40 @@ export function ChatArea() {
                     ))}
                   </div>
                 )} */}
-                
+
                 <div className="text-xs opacity-70 mt-1">
-                  {/* {new Date(msg.createdAt).toLocaleTimeString([], {
+                  {new Date(msg.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
-                    minute: "2-digit"
-                  })} */}
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
             </div>
           ))}
-          
+
           {/* // Typing indicator  */}
           {isTyping && (
             <div className="flex gap-3">
-              <Avatar className="h-8 w-8">
+              {/* <Avatar className="h-8 w-8">
                 <AvatarFallback>?</AvatarFallback>
-              </Avatar>
-              <div className="bg-muted rounded-lg p-3">
+              </Avatar> */}
+              <div className="bg-muted rounded-lg p-2">
                 <div className="flex gap-1">
                   <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  <div
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                    style={{ animationDelay: "0.1s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
                 </div>
               </div>
             </div>
           )}
         </div>
-      </ScrollArea> 
+      </ScrollArea>
 
       {/* Message Input */}
       <div className="p-4 border-t">
@@ -331,23 +282,21 @@ export function ChatArea() {
           <Button variant="ghost" size="sm">
             <Smile className="h-4 w-4" />
           </Button>
-          
+
           <Input
             placeholder="Type a message..."
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => handleTyping(e.target.value)}
             onKeyPress={handleKeyPress}
-            // onFocus={() => handleTyping(true)}
-            // onBlur={() => handleTyping(false)}
             className="flex-1"
             ref={inputRef}
           />
-          
+
           <Button onClick={handleSend}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

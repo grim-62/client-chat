@@ -19,7 +19,7 @@ interface Message {
 
 export const useChat = (user: { _id: string; username: string }, chatId: string, members: string[]) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isTyping, setIsTyping] = useState<string | null>(null);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
   useEffect(() => {
@@ -42,13 +42,13 @@ export const useChat = (user: { _id: string; username: string }, chatId: string,
     // 🔹 Typing indicators
     socket.on(SOCKET_EVENT_TYPING_START, ({ chatId: incomingChatId, user: typingUser }) => {
       if (incomingChatId === chatId && typingUser !== user._id) {
-        setIsTyping(typingUser);
+        setIsTyping(true);
       }
     });
 
     socket.on(SOCKET_EVENT_TYPING_END, ({ chatId: incomingChatId, user: typingUser }) => {
       if (incomingChatId === chatId && typingUser === isTyping) {
-        setIsTyping(null);
+        setIsTyping(false);
       }
     });
 
